@@ -1,12 +1,12 @@
 class ReadVotes:
     def read_votes(self, filename):
+        database1 = dict()
         try:
             file = open(filename, "r")
             isError = True
             lineCount = 0
             oldState = ""
             voteList = []
-            database1 = dict()
             allLines = file.readlines()
             allLines.append("\n")
             for line in allLines:
@@ -27,6 +27,8 @@ class ReadVotes:
                                 voteList.insert(voteCnt, temp)
                                 break
                             voteCnt = voteCnt + 1
+                        if voteCnt == len(voteList):
+                            voteList.append(temp)
                     else:
                         voteList.append(temp)
 
@@ -40,6 +42,27 @@ class ReadVotes:
             return False
         return database1
 
+    def write_votes(self, db, filename):
+        isError = False
+        if not len(db) > 0:
+            return False
+        else:
+            try:
+                file = open(filename, "w+")
+                for key, values in db.items():
+                    for value in values:
+                        value3 = value[3]
+                        if not "\n" in value3:
+                            value3 = value3 + "\n"
+                        file.write(key + "," + value[0] + "," + value[1] + "," + value[2] + "," + value3)
+                file.close()
+            except:
+                isError = True
+
+        return not isError
+
 
 vt = ReadVotes()
-vt.read_votes("data/votes.csv")
+db = vt.read_votes("data/votes.csv")
+val = vt.write_votes(db, "test.csv")
+print(val)
