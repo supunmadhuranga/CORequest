@@ -262,6 +262,33 @@ class ReadVotes:
         else:
             return stateName[0][0]
 
+    def remove_candidate(self, db, name, state=None):
+        if state is not None:
+            votesInState = db.get(state)
+            if votesInState is not None:
+                for det in votesInState:
+                    if name == det[0]:
+                        votesInState.remove(det)
+                        if len(votesInState) > 0:
+                            db.update({state: votesInState})
+                        else:
+                            del db[state]
+                        return None
+            else:
+                return False
+        else:
+            for key, values in db.items():
+                votesInState = db.get(key)
+                if votesInState is not None:
+                    for det in votesInState:
+                        if name == det[0]:
+                            votesInState.remove(det)
+                            if len(votesInState) > 0:
+                                db.update({key: votesInState})
+                            else:
+                                del db[key]
+            return None
+
     def incorporate_precinct(self, db, name, state, popular_votes_increment):
         votesInState = db.get(state)
         if votesInState is not None:
@@ -333,3 +360,10 @@ class ReadVotes:
                 votesInState.append(newVote)
                 db.update({key: votesInState})
             return None
+
+rv = ReadVotes()
+db = rv.read_votes('data/votes.csv')
+#v = rv.remove_candidate(db, 'Trump', 'AL')
+v = rv.remove_candidate(db, 'Clinton')
+v = rv.remove_candidate(db, 'Trump', 'AL')
+print(v)
