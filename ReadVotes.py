@@ -198,6 +198,70 @@ class ReadVotes:
         else:
             return stateName[0][0]
 
+    def candidates_difference(self, db, name1, name2, order='smallest'):
+        isSmallest = True
+        if not db:
+            return False
+        if name1 == '':
+            return False
+        if name2 == '':
+            return False
+        if order != 'smallest' and order != 'largest':
+            return False
+
+        if order == 'largest':
+            isSmallest = False
+
+        votesGapByState = dict()
+        rv = ReadVotes()
+        for key, values in db.items():
+            val1 = rv.number_of_votes(db, name1, 'popular', 'percent', key)
+            val2 = rv.number_of_votes(db, name2, 'popular', 'percent', key)
+            if val1 > val2:
+                diff = val1 - val2
+                votesGapByState.update({key: diff})
+            elif val1 < val2:
+                diff = val2 - val1
+                votesGapByState.update({key: diff})
+            else:
+                return False
+
+        stateCode = ''
+        if not isSmallest:
+            max = 0
+            maxKey = ''
+            cnt = 0
+            for key, value in votesGapByState.items():
+                if cnt == 0:
+                    max = int(value)
+                    maxKey = key
+                if max < int(value):
+                    max = int(value)
+                    maxKey = key
+                cnt = cnt + 1
+            stateCode = maxKey
+
+        if isSmallest:
+            min = 0
+            minKey = ''
+            cnt = 0
+            for key, value in votesGapByState.items():
+                if cnt == 0:
+                    min = int(value)
+                    minKey = key
+                if min > int(value):
+                    min = int(value)
+                    minKey = key
+                cnt = cnt + 1
+            stateCode = minKey
+        database2 = rv.read_votes('data/abbreviations.csv')
+        stateName = database2.get(stateCode)
+
+        if stateName is None:
+            return False
+        else:
+            return stateName[0][0]
+
 vt = ReadVotes()
 db = vt.read_votes("data/votes.csv")
 #val = vt.write_votes(db, "test.csv")
@@ -211,5 +275,6 @@ db = vt.read_votes("data/votes.csv")
 #val = vt.number_of_votes(db, "Johnson", "popular", "Percent")
 #vp = vt.popular_votes_performance(db, "Trump", "percent", "min")
 #vp = vt.popular_votes_performance(db, "Trump", "percent", "best")
-vp = vt.popular_votes_performance(db, "Clinton", "tally", "min")
-print(vp)
+#vp = vt.popular_votes_performance(db, "Clinton", "tally", "min")
+cd = vt.candidates_difference(db, 'McMullin', 'Johnson', 'largest')
+print(cd)
