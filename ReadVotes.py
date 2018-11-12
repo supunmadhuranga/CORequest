@@ -79,8 +79,137 @@ class ReadVotes:
             return False
         return database2
 
+    def number_of_votes(self, db, name, category='popular', numbering='tally', state=None):
+        sumOfAllVotes = 0
+        sumOfSpecifiedVotes = 0
+        isCategoryPopular = False
+        isCategoryElectoral = False
+        isTally = False
+        isPercent = False
+        isStateNone = False
+
+        if not db:
+            return False
+        if name == "":
+            return False
+        if category == "popular":
+            isCategoryPopular = True
+        if category == "electoral":
+            isCategoryElectoral = True
+        if numbering == "tally":
+            isTally = True
+        if numbering == "percent":
+            isPercent = True
+        if state is None:
+            isStateNone = True
+
+        if isStateNone:
+            for key, values in db.items():
+                for value in values:
+                    if isCategoryPopular:
+                        sumOfAllVotes = sumOfAllVotes + int(value[2])
+                        if name == value[0]:
+                            sumOfSpecifiedVotes = sumOfSpecifiedVotes + int(value[2])
+                    elif isCategoryElectoral:
+                        sumOfAllVotes = sumOfAllVotes + int(value[3])
+                        if name == value[0]:
+                            sumOfSpecifiedVotes = sumOfSpecifiedVotes + int(value[3])
+                    else:
+                        return False
+
+        elif not isStateNone:
+            valueList = db.get(state)
+            if valueList is not None and len(valueList) > 0:
+                for value in valueList:
+                    if isCategoryPopular:
+                        sumOfAllVotes = sumOfAllVotes + int(value[2])
+                        if name == value[0]:
+                            sumOfSpecifiedVotes = sumOfSpecifiedVotes + int(value[2])
+                    elif isCategoryElectoral:
+                        sumOfAllVotes = sumOfAllVotes + int(value[3])
+                        if name == value[0]:
+                            sumOfSpecifiedVotes = sumOfSpecifiedVotes + int(value[3])
+                    else:
+                        return False
+            else:
+                return False
+
+        if isTally:
+            return sumOfSpecifiedVotes
+        elif isPercent:
+            percent = (sumOfSpecifiedVotes / sumOfAllVotes) * 100
+            return round(percent, 2)
+        else:
+            return False
+
+    def popular_votes_performance(self, db, name, numbering, order='max'):
+        isMax = True
+        if not db:
+            return False
+        if name == '':
+            return False
+        if numbering != 'tally' and numbering != 'percent':
+            return False
+
+        if order == 'min':
+            isMax = False
+        elif order != 'max':
+            return False
+
+        votesByState = dict()
+        rv = ReadVotes()
+        for key, values in db.items():
+            val = rv.number_of_votes(db, name, 'popular', numbering, key)
+            votesByState.update({key:val})
+
+        stateCode = ''
+        if isMax:
+            max = 0
+            maxKey = ''
+            cnt = 0
+            for key, value in votesByState.items():
+                if cnt==0:
+                    max = int(value)
+                    maxKey = key
+                if max < int(value):
+                    max = int(value)
+                    maxKey = key
+                cnt = cnt + 1
+            stateCode = maxKey
+
+        if not isMax:
+            min = 0
+            minKey = ''
+            cnt = 0
+            for key, value in votesByState.items():
+                if cnt == 0:
+                    min = int(value)
+                    minKey = key
+                if min > int(value):
+                    min = int(value)
+                    minKey = key
+                cnt = cnt + 1
+            stateCode = minKey
+        database2 = rv.read_votes('data/abbreviations.csv')
+        stateName = database2.get(stateCode)
+
+        if stateName is None:
+            return False
+        else:
+            return stateName[0][0]
+
 vt = ReadVotes()
-#db = vt.read_votes("data/votes.csv")
+db = vt.read_votes("data/votes.csv")
 #val = vt.write_votes(db, "test.csv")
-val = vt.read_abbreviations("data/abbreviations.csv")
-print(val)
+#val = vt.read_abbreviations("data/abbreviations.csv")
+#val = vt.number_of_votes(db, "Trump", "popular", "tally", "VA")
+#val = vt.number_of_votes(db, "Clinton", "electoral")
+#val = vt.number_of_votes(db, "Johnson", "popular", "percent")
+#val = vt.number_of_votes(db, "Johnson", "POPULAR", "percent")
+#val = vt.number_of_votes(db, "McMullin")
+#val = vt.number_of_votes(db, "Trump", "popular", "tally", "VR")
+#val = vt.number_of_votes(db, "Johnson", "popular", "Percent")
+#vp = vt.popular_votes_performance(db, "Trump", "percent", "min")
+#vp = vt.popular_votes_performance(db, "Trump", "percent", "best")
+vp = vt.popular_votes_performance(db, "Clinton", "tally", "min")
+print(vp)
