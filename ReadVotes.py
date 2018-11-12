@@ -262,19 +262,74 @@ class ReadVotes:
         else:
             return stateName[0][0]
 
-vt = ReadVotes()
-db = vt.read_votes("data/votes.csv")
-#val = vt.write_votes(db, "test.csv")
-#val = vt.read_abbreviations("data/abbreviations.csv")
-#val = vt.number_of_votes(db, "Trump", "popular", "tally", "VA")
-#val = vt.number_of_votes(db, "Clinton", "electoral")
-#val = vt.number_of_votes(db, "Johnson", "popular", "percent")
-#val = vt.number_of_votes(db, "Johnson", "POPULAR", "percent")
-#val = vt.number_of_votes(db, "McMullin")
-#val = vt.number_of_votes(db, "Trump", "popular", "tally", "VR")
-#val = vt.number_of_votes(db, "Johnson", "popular", "Percent")
-#vp = vt.popular_votes_performance(db, "Trump", "percent", "min")
-#vp = vt.popular_votes_performance(db, "Trump", "percent", "best")
-#vp = vt.popular_votes_performance(db, "Clinton", "tally", "min")
-cd = vt.candidates_difference(db, 'McMullin', 'Johnson', 'largest')
-print(cd)
+    def incorporate_precinct(self, db, name, state, popular_votes_increment):
+        votesInState = db.get(state)
+        if votesInState is not None:
+            count = 0
+            for det in votesInState:
+                if name == det[0]:
+                    existingVotes = int(det[2])
+                    det[2] = str(existingVotes + popular_votes_increment)
+                    votesInState[count] = det
+                    db.update({state: votesInState})
+                    return None
+                count = count + 1
+            return False
+        else:
+            return False
+
+    def merge_votes(self, db, name1, name2, new_name, new_party, state=None):
+
+        if state is not None:
+            votesInState = db.get(state)
+            candidate1PopVotes = 0
+            candidate1ElVotes = 0
+            candidate2PopVotes = 0
+            candidate2ElVotes = 0
+            newVote = []
+            isName1 = False
+            isName2 = False
+            for det in votesInState:
+                if name1 == det[0]:
+                    candidate1PopVotes = int(det[2])
+                    candidate1ElVotes = int(det[3])
+                    isName1 = True
+                if name2 == det[0]:
+                    candidate2PopVotes = int(det[2])
+                    candidate2ElVotes = int(det[3])
+                    isName2 = True
+
+                if isName1 and isName2:
+                    break
+            newVote = [new_name, new_party, str(candidate1PopVotes + candidate2PopVotes),
+                       str(candidate1ElVotes + candidate2ElVotes)]
+            votesInState.append(newVote)
+            db.update({state: votesInState})
+            return None
+        else:
+            for key, value in db.items():
+                votesInState = db.get(key)
+                candidate1PopVotes = 0
+                candidate1ElVotes = 0
+                candidate2PopVotes = 0
+                candidate2ElVotes = 0
+                newVote = []
+                isName1 = False
+                isName2 = False
+                for det in votesInState:
+                    if name1 == det[0]:
+                        candidate1PopVotes = int(det[2])
+                        candidate1ElVotes = int(det[3])
+                        isName1 = True
+                    if name2 == det[0]:
+                        candidate2PopVotes = int(det[2])
+                        candidate2ElVotes = int(det[3])
+                        isName2 = True
+
+                    if isName1 and isName2:
+                        break
+                newVote = [new_name, new_party, str(candidate1PopVotes + candidate2PopVotes),
+                           str(candidate1ElVotes + candidate2ElVotes)]
+                votesInState.append(newVote)
+                db.update({key: votesInState})
+            return None
