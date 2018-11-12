@@ -61,8 +61,26 @@ class ReadVotes:
 
         return not isError
 
+    def read_abbreviations(self, filename):
+        database2 = dict()
+        isError = False
+        try:
+            file = open(filename, "r")
+            abbCount = 0
+            for line in file.readlines():
+                if abbCount > 0:
+                    data = line.split(",")
+                    database2.update({data[0]: data[1]})
+                abbCount = abbCount + 1
+        except:
+            isError = True
+
+        if isError:
+            return False
+        return database2
 
 vt = ReadVotes()
-db = vt.read_votes("data/votes.csv")
-val = vt.write_votes(db, "test.csv")
+#db = vt.read_votes("data/votes.csv")
+#val = vt.write_votes(db, "test.csv")
+val = vt.read_abbreviations("data/abbreviations.csv")
 print(val)
