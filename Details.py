@@ -26,13 +26,13 @@ def read_votes(filename):
                 if (len(voteList) > 0):
                     for d in voteList:
                         if d[0] > temp[0]:
-                            voteList.insert(voteCnt, temp)
+                            voteList.insert(voteCnt, tuple(temp))
                             break
                         voteCnt = voteCnt + 1
                     if voteCnt == len(voteList):
-                        voteList.append(temp)
+                        voteList.append(tuple(temp))
                 else:
-                    voteList.append(temp)
+                    voteList.append(tuple(temp))
 
                 oldState = lineData[0]
             isError = False
@@ -327,17 +327,19 @@ def merge_votes(db, name1, name2, new_name, new_party, state=None):
             if name1 == det[0]:
                 candidate1PopVotes = int(det[2])
                 candidate1ElVotes = int(det[3])
+                remove_candidate(db, name1, state)
                 isName1 = True
             if name2 == det[0]:
                 candidate2PopVotes = int(det[2])
                 candidate2ElVotes = int(det[3])
+                remove_candidate(db, name2, state)
                 isName2 = True
 
             if isName1 and isName2:
                 break
         newVote = [new_name, new_party, candidate1PopVotes + candidate2PopVotes,
                    candidate1ElVotes + candidate2ElVotes]
-        votesInState.append(newVote)
+        votesInState.append(tuple(newVote))
         db.update({state: votesInState})
         return None
     else:
@@ -354,16 +356,22 @@ def merge_votes(db, name1, name2, new_name, new_party, state=None):
                 if name1 == det[0]:
                     candidate1PopVotes = int(det[2])
                     candidate1ElVotes = int(det[3])
+                    remove_candidate(db, name1)
                     isName1 = True
                 if name2 == det[0]:
                     candidate2PopVotes = int(det[2])
                     candidate2ElVotes = int(det[3])
+                    remove_candidate(db, name2)
                     isName2 = True
 
                 if isName1 and isName2:
                     break
             newVote = [new_name, new_party, candidate1PopVotes + candidate2PopVotes,
                        candidate1ElVotes + candidate2ElVotes]
-            votesInState.append(newVote)
+            votesInState.append(tuple(newVote))
             db.update({key: votesInState})
+        print(db['NC'])
         return None
+
+db = read_votes('__votes_copy.csv')
+merge_votes(db,'Scattered', 'Other', 'VARIOUS', 'W')

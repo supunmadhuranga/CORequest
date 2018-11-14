@@ -27,13 +27,13 @@ class ReadVotes:
                     if (len(voteList) > 0):
                         for d in voteList:
                             if d[0] > temp[0]:
-                                voteList.insert(voteCnt, temp)
+                                voteList.insert(voteCnt, tuple(temp))
                                 break
                             voteCnt = voteCnt + 1
                         if voteCnt == len(voteList):
-                            voteList.append(temp)
+                            voteList.append(tuple(temp))
                     else:
-                        voteList.append(temp)
+                        voteList.append(tuple(temp))
 
                     oldState = lineData[0]
                 isError = False
@@ -364,8 +364,8 @@ class ReadVotes:
                 db.update({key: votesInState})
             return None
 
-# rv = ReadVotes()
-# db = rv.read_votes('votes.csv')
+rv = ReadVotes()
+db = rv.read_votes('votes.csv')
 # rs = rv.popular_votes_performance(db, 'Clinton', 'tally', 'min')
 #rs = rv.candidates_difference(db, 'Trump', 'Clinton', 'best')
 # rs1 = False
@@ -373,4 +373,4 @@ class ReadVotes:
 #     rs1 = True
 #print(False == rs)
 # ts = rv.write_votes(db, '__votes_copy.csv')
-# print(ts)
+print(db)
