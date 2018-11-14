@@ -18,7 +18,10 @@ class ReadVotes:
                         voteList = []
 
                     for d in range(1, len(lineData)):
-                        temp.append(lineData[d])
+                        if d<3:
+                            temp.append(lineData[d].strip())
+                        else:
+                            temp.append(int(lineData[d].strip()))
 
                     voteCnt = 0
                     if (len(voteList) > 0):
@@ -52,9 +55,9 @@ class ReadVotes:
                 for key, values in db.items():
                     for value in values:
                         value3 = value[3]
-                        if not "\n" in value3:
-                            value3 = value3 + "\n"
-                        file.write(key + "," + value[0] + "," + value[1] + "," + value[2] + "," + value3)
+                        # if not "\n" in value3:
+                        #     value3 = value3 + "\n"
+                        file.write(key + "," + value[0] + "," + value[1] + "," + str(value[2]) + "," + str(value3) + '\n')
                 file.close()
             except:
                 isError = True
@@ -190,13 +193,13 @@ class ReadVotes:
                     minKey = key
                 cnt = cnt + 1
             stateCode = minKey
-        database2 = rv.read_votes('data/abbreviations.csv')
+        database2 = rv.read_abbreviations('abbreviations.csv')
         stateName = database2.get(stateCode)
 
         if stateName is None:
             return False
         else:
-            return stateName[0][0]
+            return stateName.strip()
 
     def candidates_difference(self, db, name1, name2, order='smallest'):
         isSmallest = True
@@ -254,13 +257,13 @@ class ReadVotes:
                     minKey = key
                 cnt = cnt + 1
             stateCode = minKey
-        database2 = rv.read_votes('data/abbreviations.csv')
+        database2 = rv.read_abbreviations('abbreviations.csv')
         stateName = database2.get(stateCode)
 
         if stateName is None:
             return False
         else:
-            return stateName[0][0]
+            return stateName.strip()
 
     def remove_candidate(self, db, name, state=None):
         if state is not None:
@@ -361,9 +364,13 @@ class ReadVotes:
                 db.update({key: votesInState})
             return None
 
-rv = ReadVotes()
-db = rv.read_votes('data/votes.csv')
-#v = rv.remove_candidate(db, 'Trump', 'AL')
-v = rv.remove_candidate(db, 'Clinton')
-v = rv.remove_candidate(db, 'Trump', 'AL')
-print(v)
+# rv = ReadVotes()
+# db = rv.read_votes('votes.csv')
+# rs = rv.popular_votes_performance(db, 'Clinton', 'tally', 'min')
+#rs = rv.candidates_difference(db, 'Trump', 'Clinton', 'best')
+# rs1 = False
+# if rs.strip() == 'Michigan':
+#     rs1 = True
+#print(False == rs)
+# ts = rv.write_votes(db, '__votes_copy.csv')
+# print(ts)
